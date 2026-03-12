@@ -13,22 +13,21 @@ st.title("Análise de Desempenho Real: 2025 vs 2026")
 # 2. LEITURA E TRATAMENTO DOS DADOS
 # ==========================================
 try:
-    # Lembre-se de colocar aqui os nomes corretos dos ficheiros CSV do Angeloni que você gerou
-    df_fat = pd.read_csv('angeloni_analise_entre_jan-fev_de_25_e_jan-fev_de_26_jadson2.csv')
-    df_prod = pd.read_csv('angeloni_analise_de_produtos_entre_jan-fev_de_25_e_jan-fev_de_26_jadson.csv')
+    # Insira aqui os nomes exatos dos seus ficheiros CSV
+    df_fat = pd.read_csv('faturamento.csv')
+    df_prod = pd.read_csv('produto.csv')
 except FileNotFoundError:
     st.error("Arquivos CSV não encontrados na pasta. Verifique os nomes exatos!")
     st.stop()
 
 # --- DETETOR INTELIGENTE DE COLUNAS ---
-# O Python vai procurar a coluna correta, chame-se ela "Valor Ano Anterior" ou "Valor Ano Ant"
 FAT_COL_ANT = 'Valor Ano Anterior' if 'Valor Ano Anterior' in df_fat.columns else 'Valor Ano Ant'
 FAT_COL_ATUAL = 'Valor Atual'
 
 PROD_COL_ANT = 'Valor Ano Ant' if 'Valor Ano Ant' in df_prod.columns else 'Valor Ano Anterior'
 PROD_COL_ATUAL = 'Valor Atual'
 
-# Converte para números MANTENDO os sinais negativos das devoluções
+# Converte para números MANTENDO os sinais negativos
 colunas_financeiras_fat = [FAT_COL_ANT, FAT_COL_ATUAL]
 for col in colunas_financeiras_fat:
     if col in df_fat.columns:
@@ -52,7 +51,7 @@ def calcular_variacao_inteligente(ant, atual):
             return 0.0
     return ((atual - ant) / abs(ant)) * 100
 
-# Aplica a matemática correta nas colunas para evitar falsos positivos nas devoluções
+# Aplica a matemática correta nas colunas
 if FAT_COL_ANT in df_fat.columns and FAT_COL_ATUAL in df_fat.columns:
     df_fat['Variacao (%)'] = df_fat.apply(lambda row: calcular_variacao_inteligente(row[FAT_COL_ANT], row[FAT_COL_ATUAL]), axis=1)
 
@@ -67,7 +66,7 @@ if 'COD_PRODUTO' in df_prod.columns:
 if 'NOME_PRODUTO' in df_prod.columns:
     df_prod['NOME_PRODUTO'] = df_prod['NOME_PRODUTO'].fillna("").astype(str)
 
-# Limpeza de qualquer subtotal residual (caso existam CSVs antigos)
+# Limpeza de qualquer subtotal residual (caso os CSVs antigos ainda sejam carregados)
 df_prod = df_prod[df_prod['NOME_PRODUTO'] != ">> SUBTOTAL DA LOJA <<"].copy()
 
 # ==========================================
